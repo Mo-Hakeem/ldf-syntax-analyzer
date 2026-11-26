@@ -411,18 +411,30 @@ function renderSchedules(q) {
 
 function renderEncodings(q) {
   const rows = DATA.encodings.filter(e =>
-    !q || e.name.toLowerCase().includes(q) || e.items.some(i => i.detail.toLowerCase().includes(q))
+    !q || e.name.toLowerCase().includes(q) || e.items.some(i => i.detail.toLowerCase().includes(q) || (i.unit || '').toLowerCase().includes(q))
   );
-  let html = '<table><thead><tr><th>Encoding</th><th>Type</th><th>Definition</th><th>Unit</th></tr></thead><tbody>';
+  let html = '<table><thead><tr><th style="width:180px;">Encoding</th><th style="width:110px;">Type</th><th>Definition / Enum Values</th><th style="width:90px;">Unit</th></tr></thead><tbody>';
   for (const e of rows) {
-    for (const it of e.items) {
-      html += '<tr>' +
-        '<td class="mono sec-name">' + esc(e.name) + '</td>' +
-        '<td class="mono muted">' + esc(it.kind) + '</td>' +
-        '<td class="mono val-num">' + esc(it.detail) + '</td>' +
-        '<td class="mono val-hex">' + esc(it.unit || '-') + '</td>' +
-      '</tr>';
-    }
+    const kinds = Array.from(new Set(e.items.map(i => i.kind)));
+    const typeHtml = kinds.map(k => '<span class="pill mono" style="margin-right:4px;">' + esc(k) + '</span>').join('') || '<span class="muted">-</span>';
+    const units = Array.from(new Set(e.items.map(i => i.unit).filter(Boolean)));
+    const defParts = e.items.map(it => {
+      if (it.kind === 'logical') {
+        const eq = it.detail.indexOf('=');
+        if (eq >= 0) {
+          const val = it.detail.slice(0, eq).trim();
+          const lbl = it.detail.slice(eq + 1).trim();
+          return '<span class="mono" style="display:inline-block;margin:2px 6px 2px 0;padding:2px 7px;border-radius:3px;background:rgba(128,128,128,0.14);border:1px solid var(--vscode-panel-border,#3c3c3c);"><span class="val-hex">' + esc(val) + '</span> = ' + esc(lbl) + '</span>';
+        }
+      }
+      return '<div class="mono val-num" style="margin:2px 0;">' + esc(it.detail) + '</div>';
+    });
+    html += '<tr>' +
+      '<td class="mono sec-name">' + esc(e.name) + '</td>' +
+      '<td>' + typeHtml + '</td>' +
+      '<td>' + (defParts.join('') || '<span class="muted">-</span>') + '</td>' +
+      '<td class="mono val-hex">' + esc(units.join(', ') || '-') + '</td>' +
+    '</tr>';
   }
   html += '</tbody></table>';
   return html;
