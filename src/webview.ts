@@ -259,7 +259,7 @@ function renderSignals(q) {
 
   let html = '<div class="section-bar"><h3>Signals (' + rows.length + ')</h3>' +
     (editMode ? '<button class="primary" id="addSigBtn" type="button">+ Add Signal</button>' : '') + '</div>';
-  html += '<table><thead><tr><th>Name</th><th style="width:72px;">Bits</th><th style="width:80px;">Init</th><th>Publisher</th><th>Subscribers</th><th>Encoding</th>' + (editMode ? '<th style="width:40px;"></th>' : '') + '</tr></thead><tbody>';
+  html += '<table><thead><tr><th>Name</th><th class="num" style="width:90px;">Size (bits)</th><th style="width:80px;">Init</th><th>Publisher</th><th>Subscribers</th><th>Encoding</th>' + (editMode ? '<th style="width:40px;"></th>' : '') + '</tr></thead><tbody>';
   for (const { s, idx } of rows) {
     if (!editMode) {
       html += '<tr>' +
@@ -346,7 +346,7 @@ function renderFrames(q) {
           '</div>';
         }).join('') +
       '</div>' +
-      '<table style="margin-top:8px;margin-bottom:0;"><thead><tr><th>Mapped Signal</th><th style="width:110px;">Offset (bits)</th><th style="width:90px;">Size (bits)</th>' + (editMode ? '<th style="width:40px;"></th>' : '') + '</tr></thead><tbody>';
+      '<table style="margin-top:8px;margin-bottom:0;"><thead><tr><th>Mapped Signal</th><th class="num" style="width:110px;">Offset (bits)</th><th class="num" style="width:90px;">Size (bits)</th>' + (editMode ? '<th style="width:40px;"></th>' : '') + '</tr></thead><tbody>';
     f.signals.forEach((s, sIdx) => {
       const sz = sigMap.get(s.name)?.sizeBits ?? s.sizeBits ?? '-';
       if (!editMode) {
@@ -391,7 +391,7 @@ function renderSchedules(q) {
         '</span>' +
       '</div>';
     }
-    html += '<table style="margin:0;"><thead><tr><th style="width:40px;">#</th><th>Frame / Command</th><th style="width:120px;">Delay (ms)</th>' + (editMode ? '<th style="width:40px;"></th>' : '') + '</tr></thead><tbody>';
+    html += '<table style="margin:0;"><thead><tr><th class="num" style="width:40px;">#</th><th>Frame / Command</th><th class="num" style="width:120px;">Delay (ms)</th>' + (editMode ? '<th style="width:40px;"></th>' : '') + '</tr></thead><tbody>';
     sc.entries.forEach((e, eIdx) => {
       if (!editMode) {
         html += '<tr><td class="num muted">' + eIdx + '</td><td class="mono val-node">' + esc(e.command) + '</td><td class="num mono val-num">' + e.delayMs + ' ms</td></tr>';
