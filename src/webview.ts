@@ -418,17 +418,24 @@ function renderEncodings(q) {
     const kinds = Array.from(new Set(e.items.map(i => i.kind)));
     const typeHtml = kinds.map(k => '<span class="pill mono" style="margin-right:4px;">' + esc(k) + '</span>').join('') || '<span class="muted">-</span>';
     const units = Array.from(new Set(e.items.map(i => i.unit).filter(Boolean)));
-    const defParts = e.items.map(it => {
-      if (it.kind === 'logical') {
-        const eq = it.detail.indexOf('=');
-        if (eq >= 0) {
-          const val = it.detail.slice(0, eq).trim();
-          const lbl = it.detail.slice(eq + 1).trim();
-          return '<span class="mono" style="display:inline-block;margin:2px 6px 2px 0;padding:2px 7px;border-radius:3px;background:rgba(128,128,128,0.14);border:1px solid var(--vscode-panel-border,#3c3c3c);"><span class="val-hex">' + esc(val) + '</span> = ' + esc(lbl) + '</span>';
-        }
+    const physItems = e.items.filter(i => i.kind !== 'logical');
+    const logItems = e.items.filter(i => i.kind === 'logical');
+    const makeChip = (it) => {
+      const eq = it.detail.indexOf('=');
+      if (eq >= 0) {
+        const val = it.detail.slice(0, eq).trim();
+        const lbl = it.detail.slice(eq + 1).trim();
+        return '<span class="mono" style="display:inline-block;margin:2px 6px 2px 0;padding:2px 7px;border-radius:3px;background:rgba(128,128,128,0.14);border:1px solid var(--vscode-panel-border,#3c3c3c);"><span class="val-hex">' + esc(val) + '</span> = ' + esc(lbl) + '</span>';
       }
-      return '<div class="mono val-num" style="margin:2px 0;">' + esc(it.detail) + '</div>';
-    });
+      return '<span class="mono">' + esc(it.detail) + '</span>';
+    };
+    const defParts = physItems.map(it => '<div class="mono val-num" style="margin:2px 0;">' + esc(it.detail) + '</div>');
+    if (logItems.length > 0 && logItems.length <= 6) {
+      defParts.push('<div style="display:flex;flex-wrap:wrap;">' + logItems.map(makeChip).join('') + '</div>');
+    } else if (logItems.length > 6) {
+      const preview = logItems.slice(0, 3).map(i => esc(i.detail)).join(', ') + ', ...';
+      defParts.push('<details' + (q ? ' open' : '') + ' style="margin:2px 0;"><summary class="mono muted" style="cursor:pointer;">' + logItems.length + ' enum values (' + preview + ')</summary><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:4px;margin-top:6px;">' + logItems.map(makeChip).join('') + '</div></details>');
+    }
     html += '<tr>' +
       '<td class="mono sec-name">' + esc(e.name) + '</td>' +
       '<td>' + typeHtml + '</td>' +
