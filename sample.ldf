@@ -1,0 +1,154 @@
+/* Sample LIN 2.1 Description File */
+LIN_description_file;
+LIN_protocol_version = "2.1";
+LIN_language_version = "2.1";
+LIN_speed = 19.2 kbps;
+Channel_name = "LIN_BodyBus";
+
+Nodes {
+  Master: BCM_Master, 5 ms, 0.1 ms;
+  Slaves: Pump_Ctrl, Valve_Actuator;
+}
+
+Signals {
+  PumpTargetSpeed: 16, 0, BCM_Master, Pump_Ctrl;
+  PumpEnable: 1, 0, BCM_Master, Pump_Ctrl;
+  PumpActualSpeed: 16, 0, Pump_Ctrl, BCM_Master;
+  PumpTemp: 8, 65, Pump_Ctrl, BCM_Master;
+  PumpErrorFlag: 1, 0, Pump_Ctrl, BCM_Master;
+  ValvePositionCmd: 8, 0, BCM_Master, Valve_Actuator;
+  ValvePositionFb: 8, 0, Valve_Actuator, BCM_Master;
+  ValveFault: 2, 0, Valve_Actuator, BCM_Master;
+}
+
+Diagnostic_signals {
+  MasterReqB0: 8, 0;
+  MasterReqB1: 8, 0;
+  MasterReqB2: 8, 0;
+  MasterReqB3: 8, 0;
+  MasterReqB4: 8, 0;
+  MasterReqB5: 8, 0;
+  MasterReqB6: 8, 0;
+  MasterReqB7: 8, 0;
+  SlaveRespB0: 8, 0;
+  SlaveRespB1: 8, 0;
+  SlaveRespB2: 8, 0;
+  SlaveRespB3: 8, 0;
+  SlaveRespB4: 8, 0;
+  SlaveRespB5: 8, 0;
+  SlaveRespB6: 8, 0;
+  SlaveRespB7: 8, 0;
+}
+
+Frames {
+  BCM_Cmd: 0x10, BCM_Master, 4 {
+    PumpTargetSpeed, 0;
+    PumpEnable, 16;
+    ValvePositionCmd, 24;
+  }
+  Pump_Status: 0x11, Pump_Ctrl, 4 {
+    PumpActualSpeed, 0;
+    PumpTemp, 16;
+    PumpErrorFlag, 24;
+  }
+  Valve_Status: 0x12, Valve_Actuator, 2 {
+    ValvePositionFb, 0;
+    ValveFault, 8;
+  }
+}
+
+Diagnostic_frames {
+  MasterReq: 0x3C {
+    MasterReqB0, 0;
+    MasterReqB1, 8;
+    MasterReqB2, 16;
+    MasterReqB3, 24;
+    MasterReqB4, 32;
+    MasterReqB5, 40;
+    MasterReqB6, 48;
+    MasterReqB7, 56;
+  }
+  SlaveResp: 0x3D {
+    SlaveRespB0, 0;
+    SlaveRespB1, 8;
+    SlaveRespB2, 16;
+    SlaveRespB3, 24;
+    SlaveRespB4, 32;
+    SlaveRespB5, 40;
+    SlaveRespB6, 48;
+    SlaveRespB7, 56;
+  }
+}
+
+Node_attributes {
+  Pump_Ctrl {
+    LIN_protocol = "2.1";
+    configured_NAD = 0x02;
+    initial_NAD = 0x02;
+    product_id = 0x001E, 0x0001, 1;
+    response_error = PumpErrorFlag;
+    P2_min = 50 ms;
+    ST_min = 0 ms;
+    N_As_timeout = 1000 ms;
+    N_Cr_timeout = 1000 ms;
+    configurable_frames {
+      BCM_Cmd;
+      Pump_Status;
+    }
+  }
+  Valve_Actuator {
+    LIN_protocol = "2.1";
+    configured_NAD = 0x03;
+    initial_NAD = 0x03;
+    product_id = 0x001E, 0x0002, 1;
+    response_error = ValveFault;
+    P2_min = 50 ms;
+    ST_min = 10 ms;
+    configurable_frames {
+      BCM_Cmd;
+      Valve_Status;
+    }
+  }
+}
+
+Schedule_tables {
+  Normal_Schedule {
+    BCM_Cmd delay 10 ms;
+    Pump_Status delay 10 ms;
+    Valve_Status delay 10 ms;
+  }
+  Diag_Schedule {
+    MasterReq delay 20 ms;
+    SlaveResp delay 20 ms;
+  }
+}
+
+Signal_encoding_types {
+  Speed_Enc {
+    physical_value, 0, 65535, 0.5, 0, "rpm";
+  }
+  Temp_Enc {
+    physical_value, 0, 255, 1, -40, "degC";
+  }
+  Percent_Enc {
+    physical_value, 0, 200, 0.5, 0, "%";
+  }
+  Enable_Enc {
+    logical_value, 0, "Disabled";
+    logical_value, 1, "Enabled";
+  }
+  Fault_Enc {
+    logical_value, 0, "OK";
+    logical_value, 1, "Overcurrent";
+    logical_value, 2, "Stuck";
+    logical_value, 3, "SensorError";
+  }
+}
+
+Signal_representation {
+  Speed_Enc: PumpTargetSpeed, PumpActualSpeed;
+  Temp_Enc: PumpTemp;
+  Percent_Enc: ValvePositionCmd, ValvePositionFb;
+  Enable_Enc: PumpEnable;
+  Fault_Enc: ValveFault;
+}

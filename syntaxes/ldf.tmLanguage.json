@@ -1,0 +1,72 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "LIN Description File",
+  "scopeName": "source.ldf",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#units" },
+    { "include": "#sections" },
+    { "include": "#keywords" },
+    { "include": "#diag-commands" },
+    { "include": "#operators" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        { "name": "comment.block.ldf", "begin": "/\\*", "end": "\\*/" },
+        { "name": "comment.line.double-slash.ldf", "match": "//.*$" }
+      ]
+    },
+    "strings": {
+      "name": "string.quoted.double.ldf",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        { "name": "constant.character.escape.ldf", "match": "\\\\." }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.hex.ldf", "match": "\\b0[xX][0-9a-fA-F]+\\b" },
+        { "name": "constant.numeric.float.ldf", "match": "\\b[0-9]+\\.[0-9]+\\b" },
+        { "name": "constant.numeric.decimal.ldf", "match": "\\b[0-9]+\\b" }
+      ]
+    },
+    "units": {
+      "patterns": [
+        { "name": "keyword.other.unit.ldf", "match": "\\b(kbps|ms|bits)\\b" }
+      ]
+    },
+    "sections": {
+      "patterns": [
+        {
+          "name": "keyword.control.section.ldf",
+          "match": "\\b(LIN_description_file|Nodes|composite|Signals|Diagnostic_signals|Frames|Sporadic_frames|Event_triggered_frames|Diagnostic_frames|Node_attributes|Schedule_tables|Signal_encoding_types|Signal_representation|Signal_groups)\\b"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "storage.type.ldf",
+          "match": "\\b(LIN_protocol_version|LIN_language_version|LIN_speed|Channel_name|Master|Slaves|LIN_protocol|configured_NAD|initial_NAD|product_id|response_error|fault_state_signals|P2_min|ST_min|N_As_timeout|N_Cr_timeout|configurable_frames|physical_value|logical_value|ascii_value|bcd_value|delay)\\b"
+        }
+      ]
+    },
+    "diag-commands": {
+      "patterns": [
+        {
+          "name": "support.function.diagnostic.ldf",
+          "match": "\\b(MasterReq|SlaveResp|AssignNAD|ConditionalChangeNAD|DataDump|SaveConfiguration|AssignFrameIdRange|FreeFormat|AssignFrameId)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        { "name": "keyword.operator.ldf", "match": "[=,:;{}()\\[\\]]" }
+      ]
+    }
+  }
+}

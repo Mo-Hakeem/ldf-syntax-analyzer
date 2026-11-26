@@ -1,0 +1,90 @@
+{
+  "name": "ldf-syntax-analyzer",
+  "displayName": "LIN Description File (LDF) — Syntax & Analyzer",
+  "description": "Syntax highlighting, outline symbols, hover docs, and interactive network/frame/schedule analyzer for LIN Description Files (.ldf).",
+  "version": "0.1.0",
+  "publisher": "MohamedHakeem",
+  "license": "MIT",
+  "icon": "icon.png",
+  "keywords": [
+    "ldf",
+    "lin",
+    "lin-bus",
+    "automotive",
+    "embedded",
+    "firmware",
+    "schedule-table",
+    "frames"
+  ],
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Visualization",
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:ldf"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "customEditors": [
+      {
+        "viewType": "ldf.ldfView",
+        "displayName": "LDF Network Analyzer",
+        "selector": [
+          { "filenamePattern": "*.ldf" }
+        ],
+        "priority": "option"
+      }
+    ],
+    "commands": [
+      {
+        "command": "ldf.openAnalyzer",
+        "title": "Open LDF Network Analyzer",
+        "icon": "$(graph)"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "ldf.openAnalyzer",
+          "when": "resourceLangId == ldf",
+          "group": "navigation"
+        }
+      ]
+    },
+    "languages": [
+      {
+        "id": "ldf",
+        "aliases": [
+          "LIN Description File",
+          "LDF",
+          "ldf"
+        ],
+        "extensions": [
+          ".ldf"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "ldf",
+        "scopeName": "source.ldf",
+        "path": "./syntaxes/ldf.tmLanguage.json"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/vscode": "^1.85.0",
+    "typescript": "^5.4.0"
+  }
+}
