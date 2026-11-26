@@ -99,6 +99,11 @@ export function getLdfWebviewContent(parsed: ParsedLdf, fileName: string): strin
   td input, td select { width: 100%; min-width: 60px; }
   .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .sec-name { color: var(--vscode-symbolIcon-structForeground, #c586c0); font-weight: 600; }
+  .val-hex { color: var(--vscode-textLink-foreground, #569cd6); }
+  .val-node { color: var(--vscode-symbolIcon-structForeground, #c586c0); font-weight: 600; }
+  .val-warn { color: var(--vscode-editorWarning-foreground, #cca700); }
+  .val-good { color: var(--vscode-charts-green, #6a9955); font-weight: 600; }
+  .val-num { color: var(--vscode-debugTokenExpression-number, #b5cea8); }
   .pill {
     display: inline-block; padding: 1px 6px; border-radius: 3px; font-size: 10px;
     background: rgba(86, 156, 214, 0.16); color: var(--vscode-textLink-foreground, #9cdcfe);
@@ -177,15 +182,15 @@ function renderOverview(q) {
   if (!editMode) {
     html += '<div class="cards">' +
       '<div class="card"><div class="card-title">Protocol &amp; Speed</div>' +
-        '<div class="mono" style="font-size:15px;font-weight:600;">LIN ' + esc(DATA.protocolVersion || '?') + ' &bull; ' + (DATA.speedKbps ?? '?') + ' kbps</div>' +
+        '<div class="mono val-hex" style="font-size:15px;font-weight:600;">LIN ' + esc(DATA.protocolVersion || '?') + ' &bull; ' + (DATA.speedKbps ?? '?') + ' kbps</div>' +
         '<div class="muted mono" style="margin-top:4px;">Language ' + esc(DATA.languageVersion || '?') + (DATA.channelName ? ' &bull; ' + esc(DATA.channelName) : '') + '</div>' +
       '</div>' +
       '<div class="card"><div class="card-title">Master Node</div>' +
-        '<div class="mono" style="font-size:15px;font-weight:600;">' + esc(m.name) + '</div>' +
-        '<div class="muted mono" style="margin-top:4px;">Timebase ' + (m.timeBaseMs ?? '-') + ' ms &bull; Jitter ' + (m.jitterMs ?? '-') + ' ms</div>' +
+        '<div class="mono val-good" style="font-size:15px;">' + esc(m.name) + '</div>' +
+        '<div class="muted mono" style="margin-top:4px;">Timebase <span class="val-num">' + (m.timeBaseMs ?? '-') + '</span> ms &bull; Jitter <span class="val-num">' + (m.jitterMs ?? '-') + '</span> ms</div>' +
       '</div>' +
       '<div class="card"><div class="card-title">Slaves &amp; Frames</div>' +
-        '<div class="mono" style="font-size:15px;font-weight:600;">' + DATA.slaves.length + ' slaves &bull; ' + DATA.frames.length + ' frames</div>' +
+        '<div class="mono val-num" style="font-size:15px;font-weight:600;">' + DATA.slaves.length + ' slaves &bull; ' + DATA.frames.length + ' frames</div>' +
         '<div class="muted mono" style="margin-top:4px;">' + DATA.signals.length + ' signals &bull; ' + DATA.schedules.length + ' schedule tables</div>' +
       '</div>' +
     '</div>';
@@ -216,14 +221,14 @@ function renderOverview(q) {
     for (const { a, idx } of attrs) {
       if (!editMode) {
         html += '<tr>' +
-          '<td class="mono sec-name">' + esc(a.name) + '</td>' +
-          '<td class="mono">' + esc(a.protocol || '-') + '</td>' +
-          '<td class="mono">' + esc(a.configuredNad || '-') + '</td>' +
-          '<td class="mono muted">' + esc(a.initialNad || '-') + '</td>' +
-          '<td class="mono">' + esc(a.productId || '-') + '</td>' +
-          '<td class="mono">' + esc(a.responseError || '-') + '</td>' +
-          '<td class="mono muted">' + (a.p2MinMs ?? '-') + '</td>' +
-          '<td class="mono muted">' + (a.stMinMs ?? '-') + '</td>' +
+          '<td class="mono val-node">' + esc(a.name) + '</td>' +
+          '<td class="mono val-num">' + esc(a.protocol || '-') + '</td>' +
+          '<td class="mono val-hex">' + esc(a.configuredNad || '-') + '</td>' +
+          '<td class="mono val-hex" style="opacity:0.75;">' + esc(a.initialNad || '-') + '</td>' +
+          '<td class="mono val-hex">' + esc(a.productId || '-') + '</td>' +
+          '<td class="mono val-warn">' + esc(a.responseError || '-') + '</td>' +
+          '<td class="mono val-num">' + (a.p2MinMs ?? '-') + '</td>' +
+          '<td class="mono val-num">' + (a.stMinMs ?? '-') + '</td>' +
         '</tr>';
       } else {
         html += '<tr>' +
@@ -259,9 +264,9 @@ function renderSignals(q) {
     if (!editMode) {
       html += '<tr>' +
         '<td class="mono"><strong>' + esc(s.name) + '</strong></td>' +
-        '<td class="num mono">' + s.sizeBits + '</td>' +
-        '<td class="mono muted">' + esc(s.initValue) + '</td>' +
-        '<td class="mono">' + esc(s.publisher) + '</td>' +
+        '<td class="num mono val-num">' + s.sizeBits + '</td>' +
+        '<td class="mono val-num">' + esc(s.initValue) + '</td>' +
+        '<td class="mono val-node">' + esc(s.publisher) + '</td>' +
         '<td class="mono muted">' + esc(s.subscribers.join(', ') || '-') + '</td>' +
         '<td class="mono">' + (s.encoding ? '<span class="pill">' + esc(s.encoding) + '</span>' : '<span class="muted">-</span>') + '</td>' +
       '</tr>';
@@ -325,18 +330,27 @@ function renderFrames(q) {
         '</span>' +
       '</div>';
     }
+    const palette = [
+      'background:rgba(86,156,214,0.18);border-color:rgba(86,156,214,0.45);',
+      'background:rgba(106,153,85,0.20);border-color:rgba(106,153,85,0.48);',
+      'background:rgba(197,134,192,0.18);border-color:rgba(197,134,192,0.45);',
+      'background:rgba(210,153,34,0.18);border-color:rgba(210,153,34,0.45);',
+      'background:rgba(78,201,176,0.18);border-color:rgba(78,201,176,0.45);',
+    ];
+    const sigColor = new Map(f.signals.map((s, i) => [s.name, palette[i % palette.length]]));
     html += '<div class="bit-grid">' +
-        byteSlots.map((names, bIdx) =>
-          '<div class="bit-cell mono' + (names.length ? '' : ' bit-empty') + '" title="' + esc(names.join(', ') || 'unused') + '">' +
+        byteSlots.map((names, bIdx) => {
+          const st = names.length ? (sigColor.get(names[0]) || '') : '';
+          return '<div class="bit-cell mono' + (names.length ? '' : ' bit-empty') + '" style="' + st + '" title="' + esc(names.join(', ') || 'unused') + '">' +
             'B' + bIdx + (names.length ? ': ' + esc(names[0]) : '') +
-          '</div>'
-        ).join('') +
+          '</div>';
+        }).join('') +
       '</div>' +
       '<table style="margin-top:8px;margin-bottom:0;"><thead><tr><th>Mapped Signal</th><th style="width:110px;">Offset (bits)</th><th style="width:90px;">Size (bits)</th>' + (editMode ? '<th style="width:40px;"></th>' : '') + '</tr></thead><tbody>';
     f.signals.forEach((s, sIdx) => {
       const sz = sigMap.get(s.name)?.sizeBits ?? s.sizeBits ?? '-';
       if (!editMode) {
-        html += '<tr><td class="mono">' + esc(s.name) + '</td><td class="num mono">' + s.offsetBits + '</td><td class="num mono muted">' + sz + '</td></tr>';
+        html += '<tr><td class="mono">' + esc(s.name) + '</td><td class="num mono val-num">' + s.offsetBits + '</td><td class="num mono val-num">' + sz + '</td></tr>';
       } else {
         html += '<tr>' +
           '<td><input class="mono" data-fsig="' + idx + ':' + sIdx + '" data-k="name" type="text" value="' + esc(s.name) + '"></td>' +
@@ -380,7 +394,7 @@ function renderSchedules(q) {
     html += '<table style="margin:0;"><thead><tr><th style="width:40px;">#</th><th>Frame / Command</th><th style="width:120px;">Delay (ms)</th>' + (editMode ? '<th style="width:40px;"></th>' : '') + '</tr></thead><tbody>';
     sc.entries.forEach((e, eIdx) => {
       if (!editMode) {
-        html += '<tr><td class="num muted">' + eIdx + '</td><td class="mono">' + esc(e.command) + '</td><td class="num mono">' + e.delayMs + ' ms</td></tr>';
+        html += '<tr><td class="num muted">' + eIdx + '</td><td class="mono val-node">' + esc(e.command) + '</td><td class="num mono val-num">' + e.delayMs + ' ms</td></tr>';
       } else {
         html += '<tr>' +
           '<td class="muted">' + eIdx + '</td>' +
@@ -405,8 +419,8 @@ function renderEncodings(q) {
       html += '<tr>' +
         '<td class="mono sec-name">' + esc(e.name) + '</td>' +
         '<td class="mono muted">' + esc(it.kind) + '</td>' +
-        '<td class="mono">' + esc(it.detail) + '</td>' +
-        '<td class="mono">' + esc(it.unit || '-') + '</td>' +
+        '<td class="mono val-num">' + esc(it.detail) + '</td>' +
+        '<td class="mono val-hex">' + esc(it.unit || '-') + '</td>' +
       '</tr>';
     }
   }
