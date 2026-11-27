@@ -97,7 +97,7 @@ export function getLdfWebviewContent(parsed: ParsedLdf, fileName: string): strin
     font-weight: 600; font-size: 11px;
   }
   td input, td select { width: 100%; min-width: 60px; }
-  .num { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .num { text-align: center; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .sec-name { color: var(--vscode-symbolIcon-structForeground, #c586c0); font-weight: 600; }
   .val-hex { color: var(--vscode-textLink-foreground, #569cd6); }
   .val-node { color: var(--vscode-symbolIcon-structForeground, #c586c0); font-weight: 600; }
