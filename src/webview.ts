@@ -410,40 +410,73 @@ function renderSchedules(q) {
 }
 
 function renderEncodings(q) {
-  const rows = DATA.encodings.filter(e =>
-    !q || e.name.toLowerCase().includes(q) || e.items.some(i => i.detail.toLowerCase().includes(q) || (i.unit || '').toLowerCase().includes(q))
-  );
-  let html = '<table><thead><tr><th style="width:180px;">Encoding</th><th style="width:110px;">Type</th><th>Definition / Enum Values</th><th style="width:90px;">Unit</th></tr></thead><tbody>';
-  for (const e of rows) {
-    const kinds = Array.from(new Set(e.items.map(i => i.kind)));
-    const typeHtml = kinds.map(k => '<span class="pill mono" style="margin-right:4px;">' + esc(k) + '</span>').join('') || '<span class="muted">-</span>';
-    const units = Array.from(new Set(e.items.map(i => i.unit).filter(Boolean)));
-    const physItems = e.items.filter(i => i.kind !== 'logical');
-    const logItems = e.items.filter(i => i.kind === 'logical');
-    const makeChip = (it) => {
-      const eq = it.detail.indexOf('=');
-      if (eq >= 0) {
-        const val = it.detail.slice(0, eq).trim();
-        const lbl = it.detail.slice(eq + 1).trim();
-        return '<span class="mono" style="display:inline-block;margin:2px 6px 2px 0;padding:2px 7px;border-radius:3px;background:rgba(128,128,128,0.14);border:1px solid var(--vscode-panel-border,#3c3c3c);"><span class="val-hex">' + esc(val) + '</span> = ' + esc(lbl) + '</span>';
+  const rows = DATA.encodings
+    .map((e, idx) => ({ e, idx }))
+    .filter(({ e }) =>
+      !q || e.name.toLowerCase().includes(q) || e.items.some(i => i.detail.toLowerCase().includes(q) || (i.unit || '').toLowerCase().includes(q))
+    );
+
+  if (!editMode) {
+    let html = '<table><thead><tr><th style="width:180px;">Encoding</th><th style="width:110px;">Type</th><th>Definition / Enum Values</th><th style="width:90px;">Unit</th></tr></thead><tbody>';
+    for (const { e } of rows) {
+      const kinds = Array.from(new Set(e.items.map(i => i.kind)));
+      const typeHtml = kinds.map(k => '<span class="pill mono" style="margin-right:4px;">' + esc(k) + '</span>').join('') || '<span class="muted">-</span>';
+      const units = Array.from(new Set(e.items.map(i => i.unit).filter(Boolean)));
+      const physItems = e.items.filter(i => i.kind !== 'logical');
+      const logItems = e.items.filter(i => i.kind === 'logical');
+      const makeChip = (it) => {
+        const eq = it.detail.indexOf('=');
+        if (eq >= 0) {
+          const val = it.detail.slice(0, eq).trim();
+          const lbl = it.detail.slice(eq + 1).trim();
+          return '<span class="mono" style="display:inline-block;margin:2px 6px 2px 0;padding:2px 7px;border-radius:3px;background:rgba(128,128,128,0.14);border:1px solid var(--vscode-panel-border,#3c3c3c);"><span class="val-hex">' + esc(val) + '</span> = ' + esc(lbl) + '</span>';
+        }
+        return '<span class="mono">' + esc(it.detail) + '</span>';
+      };
+      const defParts = physItems.map(it => '<div class="mono val-num" style="margin:2px 0;">' + esc(it.detail) + '</div>');
+      if (logItems.length > 0 && logItems.length <= 6) {
+        defParts.push('<div style="display:flex;flex-wrap:wrap;">' + logItems.map(makeChip).join('') + '</div>');
+      } else if (logItems.length > 6) {
+        const preview = logItems.slice(0, 3).map(i => esc(i.detail)).join(', ') + ', ...';
+        defParts.push('<details' + (q ? ' open' : '') + ' style="margin:2px 0;"><summary class="mono muted" style="cursor:pointer;">' + logItems.length + ' enum values (' + preview + ')</summary><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:4px;margin-top:6px;">' + logItems.map(makeChip).join('') + '</div></details>');
       }
-      return '<span class="mono">' + esc(it.detail) + '</span>';
-    };
-    const defParts = physItems.map(it => '<div class="mono val-num" style="margin:2px 0;">' + esc(it.detail) + '</div>');
-    if (logItems.length > 0 && logItems.length <= 6) {
-      defParts.push('<div style="display:flex;flex-wrap:wrap;">' + logItems.map(makeChip).join('') + '</div>');
-    } else if (logItems.length > 6) {
-      const preview = logItems.slice(0, 3).map(i => esc(i.detail)).join(', ') + ', ...';
-      defParts.push('<details' + (q ? ' open' : '') + ' style="margin:2px 0;"><summary class="mono muted" style="cursor:pointer;">' + logItems.length + ' enum values (' + preview + ')</summary><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:4px;margin-top:6px;">' + logItems.map(makeChip).join('') + '</div></details>');
+      html += '<tr>' +
+        '<td class="mono sec-name">' + esc(e.name) + '</td>' +
+        '<td>' + typeHtml + '</td>' +
+        '<td>' + (defParts.join('') || '<span class="muted">-</span>') + '</td>' +
+        '<td class="mono val-hex">' + esc(units.join(', ') || '-') + '</td>' +
+      '</tr>';
     }
-    html += '<tr>' +
-      '<td class="mono sec-name">' + esc(e.name) + '</td>' +
-      '<td>' + typeHtml + '</td>' +
-      '<td>' + (defParts.join('') || '<span class="muted">-</span>') + '</td>' +
-      '<td class="mono val-hex">' + esc(units.join(', ') || '-') + '</td>' +
-    '</tr>';
+    html += '</tbody></table>';
+    return html;
   }
-  html += '</tbody></table>';
+
+  let html = '<div class="section-bar"><h3>Signal Encodings (' + rows.length + ')</h3>' +
+    '<button class="primary" id="addEncBtn" type="button">+ Add Encoding</button></div>';
+  for (const { e, idx } of rows) {
+    html += '<div class="card" style="margin-bottom:10px;">' +
+      '<div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">' +
+        '<input class="mono sec-name" style="width:200px;" data-enc="' + idx + '" type="text" value="' + esc(e.name) + '">' +
+        '<span class="right">' +
+          '<button data-addencitem="' + idx + ':physical" type="button">+ Physical</button>' +
+          '<button data-addencitem="' + idx + ':logical" type="button">+ Logical</button>' +
+          '<button class="danger" data-delenc="' + idx + '" type="button">&times;</button>' +
+        '</span>' +
+      '</div>' +
+      '<table style="margin:0;"><thead><tr><th style="width:110px;">Kind</th><th>Definition</th><th style="width:100px;">Unit</th><th style="width:40px;"></th></tr></thead><tbody>';
+    e.items.forEach((it, iIdx) => {
+      html += '<tr>' +
+        '<td><select class="mono" data-encitem="' + idx + ':' + iIdx + '" data-k="kind">' +
+          '<option value="physical"' + (it.kind === 'physical' ? ' selected' : '') + '>physical</option>' +
+          '<option value="logical"' + (it.kind === 'logical' ? ' selected' : '') + '>logical</option>' +
+        '</select></td>' +
+        '<td><input class="mono" data-encitem="' + idx + ':' + iIdx + '" data-k="detail" type="text" value="' + esc(it.detail) + '"></td>' +
+        '<td><input class="mono" data-encitem="' + idx + ':' + iIdx + '" data-k="unit" type="text" value="' + esc(it.unit || '') + '" placeholder="unit"></td>' +
+        '<td><button class="danger" data-delencitem="' + idx + ':' + iIdx + '" type="button">&times;</button></td>' +
+      '</tr>';
+    });
+    html += '</tbody></table></div>';
+  }
   return html;
 }
 
@@ -520,6 +553,18 @@ contentEl.addEventListener('change', (e) => {
       syncToDoc();
       render();
     }
+  } else if (t.dataset.enc !== undefined) {
+    const enc = DATA.encodings[parseInt(t.dataset.enc, 10)];
+    if (enc) { enc.name = t.value.trim(); syncToDoc(); }
+  } else if (t.dataset.encitem !== undefined) {
+    const [ei, ii] = t.dataset.encitem.split(':').map(Number);
+    const it = DATA.encodings[ei]?.items[ii];
+    if (it) {
+      const k = t.dataset.k;
+      if (k === 'unit') it.unit = t.value.trim() || undefined;
+      else it[k] = t.value;
+      syncToDoc();
+    }
   }
 });
 
@@ -562,6 +607,25 @@ contentEl.addEventListener('click', (e) => {
   } else if (t.dataset.delslot !== undefined) {
     const [si, ei] = t.dataset.delslot.split(':').map(Number);
     DATA.schedules[si]?.entries.splice(ei, 1);
+    syncToDoc(); render();
+  } else if (t.id === 'addEncBtn') {
+    DATA.encodings.push({ name: 'New_Enc_' + (DATA.encodings.length + 1), items: [{ kind: 'logical', detail: '0 = OK' }] });
+    syncToDoc(); render();
+  } else if (t.dataset.delenc !== undefined) {
+    DATA.encodings.splice(parseInt(t.dataset.delenc, 10), 1);
+    syncToDoc(); render();
+  } else if (t.dataset.addencitem !== undefined) {
+    const [eiStr, kind] = t.dataset.addencitem.split(':');
+    const enc = DATA.encodings[parseInt(eiStr, 10)];
+    if (enc) {
+      enc.items.push(kind === 'physical'
+        ? { kind: 'physical', detail: '[0 .. 255] scale=1 offset=0', unit: '' }
+        : { kind: 'logical', detail: enc.items.length + ' = Value' });
+      syncToDoc(); render();
+    }
+  } else if (t.dataset.delencitem !== undefined) {
+    const [ei, ii] = t.dataset.delencitem.split(':').map(Number);
+    DATA.encodings[ei]?.items.splice(ii, 1);
     syncToDoc(); render();
   }
 });
