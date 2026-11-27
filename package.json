@@ -6,6 +6,14 @@
   "publisher": "MohamedHakeem",
   "license": "MIT",
   "icon": "icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Mo-Hakeem/ldf-syntax-analyzer.git"
+  },
+  "homepage": "https://github.com/Mo-Hakeem/ldf-syntax-analyzer#readme",
+  "bugs": {
+    "url": "https://github.com/Mo-Hakeem/ldf-syntax-analyzer/issues"
+  },
   "keywords": [
     "ldf",
     "lin",

@@ -74,6 +74,7 @@ export interface ParsedLdf {
   frames: LdfFrame[];
   schedules: LdfScheduleTable[];
   encodings: LdfEncoding[];
+  extraBlocks?: { keyword: string; body: string }[];
 }
 
 function stripComments(text: string): string {
@@ -296,6 +297,13 @@ export function parseLdf(text: string): ParsedLdf {
     }
   }
 
+  const extraKeywords = ['Diagnostic_signals', 'Diagnostic_frames', 'Sporadic_frames', 'Event_triggered_frames', 'Signal_groups'];
+  const extraBlocks: { keyword: string; body: string }[] = [];
+  for (const kw of extraKeywords) {
+    const blk = extractBlock(clean, kw);
+    if (blk !== null) extraBlocks.push({ keyword: kw, body: blk });
+  }
+
   return {
     protocolVersion: protM?.[1],
     languageVersion: langM?.[1],
@@ -308,6 +316,7 @@ export function parseLdf(text: string): ParsedLdf {
     frames,
     schedules,
     encodings,
+    extraBlocks,
   };
 }
 
@@ -436,6 +445,13 @@ export function serializeLdf(d: ParsedLdf): string {
     }
     lines.push('}');
     lines.push('');
+  }
+
+  if (d.extraBlocks && d.extraBlocks.length) {
+    for (const eb of d.extraBlocks) {
+      lines.push(`${eb.keyword} {${eb.body}}`);
+      lines.push('');
+    }
   }
 
   return lines.join('\n');

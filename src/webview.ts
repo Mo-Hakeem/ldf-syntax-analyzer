@@ -259,8 +259,11 @@ function renderSignals(q) {
 
   let html = '<div class="section-bar"><h3>Signals (' + rows.length + ')</h3>' +
     (editMode ? '<button class="primary" id="addSigBtn" type="button">+ Add Signal</button>' : '') + '</div>';
+  if (rows.length > 500) {
+    html += '<div class="muted" style="margin-bottom:6px;">Showing 500 of ' + rows.length.toLocaleString() + ' signals (use filter to narrow)</div>';
+  }
   html += '<table><thead><tr><th>Name</th><th class="num" style="width:90px;">Size (bits)</th><th style="width:80px;">Init</th><th>Publisher</th><th>Subscribers</th><th>Encoding</th>' + (editMode ? '<th style="width:40px;"></th>' : '') + '</tr></thead><tbody>';
-  for (const { s, idx } of rows) {
+  for (const { s, idx } of rows.slice(0, 500)) {
     if (!editMode) {
       html += '<tr>' +
         '<td class="mono"><strong>' + esc(s.name) + '</strong></td>' +
@@ -297,10 +300,13 @@ function renderFrames(q) {
 
   let html = '<div class="section-bar"><h3>Frames (' + rows.length + ')</h3>' +
     (editMode ? '<button class="primary" id="addFrameBtn" type="button">+ Add Frame</button>' : '') + '</div>';
+  if (rows.length > 250) {
+    html += '<div class="muted" style="margin-bottom:6px;">Showing 250 of ' + rows.length.toLocaleString() + ' frames (use filter to narrow)</div>';
+  }
+  const sigMap = new Map(DATA.signals.map(s => [s.name, s]));
 
-  for (const { f, idx } of rows) {
+  for (const { f, idx } of rows.slice(0, 250)) {
     const idHex = '0x' + (f.id >>> 0).toString(16).toUpperCase().padStart(2, '0');
-    const sigMap = new Map(DATA.signals.map(s => [s.name, s]));
     const byteSlots = Array.from({ length: Math.min(8, f.sizeBytes) }, () => []);
     for (const s of f.signals) {
       const sz = sigMap.get(s.name)?.sizeBits ?? s.sizeBits ?? 8;
@@ -630,7 +636,11 @@ contentEl.addEventListener('click', (e) => {
   }
 });
 
-searchEl.addEventListener('input', render);
+let searchTimer = null;
+searchEl.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(render, 120);
+});
 toggleEditBtn.addEventListener('click', () => {
   editMode = !editMode;
   toggleEditBtn.textContent = editMode ? 'Lock (Read-Only)' : 'Enable Editing';
