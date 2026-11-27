@@ -1,4 +1,4 @@
-# LIN Description File (LDF) — Syntax & Analyzer
+# LinMap — LDF Syntax & Analyzer
 
 Syntax highlighting, outline symbols, hover docs, and an interactive **LDF Network Analyzer** for LIN Description Files (`.ldf`).
 

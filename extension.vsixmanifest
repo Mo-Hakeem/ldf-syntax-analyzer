@@ -2,7 +2,7 @@
 <PackageManifest Version="2.0.0" xmlns="http://schemas.microsoft.com/developer/vsx-schema/2011" xmlns:d="http://schemas.microsoft.com/developer/vsx-schema-design/2011">
   <Metadata>
     <Identity Language="en-US" Id="ldf-syntax-analyzer" Version="0.1.0" Publisher="MohamedHakeem" />
-    <DisplayName>LIN Description File (LDF) — Syntax &amp; Analyzer</DisplayName>
+    <DisplayName>LinMap — LDF Syntax &amp; Analyzer</DisplayName>
     <Description xml:space="preserve">Syntax highlighting, outline symbols, hover docs, and interactive network/frame/schedule analyzer for LIN Description Files (.ldf).</Description>
     <Tags>ldf,lin,lin-bus,automotive,embedded,firmware</Tags>
     <Categories>Programming Languages,Visualization,Other</Categories>

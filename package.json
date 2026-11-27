@@ -1,6 +1,6 @@
 {
   "name": "ldf-syntax-analyzer",
-  "displayName": "LIN Description File (LDF) — Syntax & Analyzer",
+  "displayName": "LinMap — LDF Syntax & Analyzer",
   "description": "Syntax highlighting, outline symbols, hover docs, and interactive network/frame/schedule analyzer for LIN Description Files (.ldf).",
   "version": "0.1.0",
   "publisher": "MohamedHakeem",
